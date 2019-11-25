@@ -42,6 +42,11 @@ void setup_tcp_client() {
 		
 		sent_recv_bytes = sendto(client_fd,(char *)&request, sizeof(struct client_req), 0,
 					(struct sockaddr *) &server_addr, sizeof(struct sockaddr) );
+		 if(sent_recv_bytes == 0){
+                        printf("\n Server connection closed Exiting...");
+                        break;
+                }
+
 		if( request.a == 0 && request.b == 0)
 		{
 			close(client_fd);
@@ -50,7 +55,10 @@ void setup_tcp_client() {
 		}
 		sent_recv_bytes = recvfrom(client_fd,(char *)buf, sizeof(buf), 0,
                                         (struct sockaddr *) &server_addr, &addr_len);
-		
+		if(sent_recv_bytes == 0){
+			printf("\n Server connection closed Exiting...");
+			break;
+		}
 		sum = *(int *)buf;
 		
 		printf("\nResult from server is %d", sum);
