@@ -1,1 +1,34 @@
 
+1. Threads and Process Creation
+
+Creation of a thread uses the same system call as
+fork() does, only with different flags:
+clone(CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND, 0);
+
+The code above does basically the same as a normal process creation would do, with the exception
+that the address space (VM), file system information (FS), open files (FILES) and signal handlers
+along with blocked signals (SIGHAND) will be shared
+
+A normal fork goes like this:
+clone(SIGCHLD, 0);
+SIGCHLD here means that the child process should send this flag to its father, when it terminates.
+
+
+2. UserSpace thread Vs Kernel thread
+
+  -> User space threads are created with user-level library API, called
+     pthread. Kernel threads, on the other hand, are created by the kernel itself.
+     
+  -> The main difference between the two types is that kernel threads do not have a limited address space.
+     They live solely in kernel-space, never switching to the realm of user-land.
+     However, they are fully schedulable and preemptible entities, just like normal processes.
+     
+ /* Simple interface for creating and stopping kernel threads without mess. */
+…
+struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
+                                              void *data,
+                                              int node,
+                                              const char namefmt[], ...);
+#define kthread_create(threadfn, data, namefmt, arg...) \
+                                 kthread_create_on_node(threadfn, data, -1, namefmt, ##arg)
+
